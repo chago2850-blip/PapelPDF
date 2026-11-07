@@ -1,0 +1,53 @@
+feature,area,priority,original,clone,notes
+Abrir PDF (diálogo y arrastrar),core,must,yes,yes,S01/S02
+Archivos recientes,core,should,yes,yes,S01
+Visor con miniaturas y zoom,view,must,yes,yes,S02
+Navegación por páginas y atajos,view,must,yes,yes,S02
+Modo pantalla completa / lectura,view,could,yes,yes,Pantalla completa del menú Ver
+Abrir PDF cifrado con contraseña,view,should,yes,yes,Se descifra con qpdf y se vuelve a cifrar al guardar
+Resaltar,annotate,must,yes,yes,S03
+Subrayar / tachar,annotate,should,yes,yes,S03
+Cuadro de texto,annotate,must,yes,yes,S03
+Nota adhesiva,annotate,should,yes,yes,S03
+Rectángulo / elipse,annotate,should,yes,yes,S03
+Dibujo a mano (lápiz),annotate,must,yes,yes,S03
+Insertar imagen,edit,should,yes,yes,S04
+Mover / redimensionar / borrar anotación,annotate,must,yes,yes,S03
+Deshacer / rehacer,core,must,yes,yes,
+Editar texto existente del PDF,edit,could,yes,partial,Corrector blanco + texto nuevo encima; no reflujo de párrafos
+Rellenar formularios AcroForm,form,must,yes,yes,S06
+Crear campos de formulario,form,could,yes,no,
+Extraer datos de formulario a CSV,form,could,yes,yes,
+Firma dibujada / escrita / imagen,sign,must,yes,yes,S08
+Rotar páginas,page,must,yes,yes,S05
+Eliminar páginas,page,must,yes,yes,S05
+Reordenar páginas (arrastrar),page,must,yes,yes,S05
+Insertar páginas de otro PDF,page,should,yes,yes,F07
+Insertar página en blanco,page,should,yes,yes,F07
+Extraer / dividir páginas,page,should,yes,yes,F06
+Combinar PDFs,page,must,yes,yes,S11
+Marca de agua de texto,edit,should,yes,yes,F08
+Numeración de páginas,edit,should,yes,yes,F08
+Recortar páginas,edit,could,yes,no,
+Enlaces,edit,could,yes,no,
+Bates numbering,edit,could,yes,yes,Formato {n:6} y número inicial
+Guardar / Guardar como,core,must,yes,yes,
+Imprimir,core,should,yes,yes,Vía visor PDF de Chromium
+Proteger con contraseña,protect,could,yes,yes,AES-256 con qpdf (WebAssembly) + permisos
+Redacción,protect,could,yes,yes,Las páginas redactadas se convierten en imagen al guardar
+OCR,ocr,could,yes,yes,"tesseract.js sin conexión, español e inglés; PDF buscable"
+Convertir a Word/Excel/PPT,convert,could,yes,partial,Word (.docx) y texto; Excel/PPT no
+Exportar páginas como imagen PNG,convert,should,yes,yes,Página actual
+Comprimir PDF,batch,could,yes,yes,Sin pérdida (qpdf) o por imagen 150/100 ppp
+Procesamiento por lotes,batch,could,yes,no,
+Instaladores Windows/macOS/Linux,platform,must,partial,yes,".exe, .dmg (x64/arm64), .deb, .rpm, AppImage"
+Interfaz en español,platform,must,yes,yes,
+Document Cloud,cloud,skip,yes,no,Servicio y red propios de Wondershare
+Funciones de IA (traducir/resumir),ai,skip,yes,no,Dependen de sus servidores
+Despliegue MSI/GPO/SCCM y licencias,enterprise,skip,yes,no,No aplica a software libre
+Firma digital con certificado AATL,sign,skip,yes,no,Requiere una CA de confianza
+Buscar texto (Ctrl+F),view,must,yes,yes,Incluye texto de OCR; ignora acentos
+Seleccionar y copiar texto,view,must,yes,yes,Capa de texto de pdf.js + OCR
+Imágenes a PDF,convert,should,yes,yes,PNG/JPG/WebP/GIF/BMP
+Exportar a imágenes PNG/JPG,convert,should,yes,yes,96/150/300 ppp
+Corrector blanco,edit,should,yes,yes,

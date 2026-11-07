@@ -1,0 +1,118 @@
+name: Compilar instaladores
+
+# En cada push a main y en cada PR: pruebas + instaladores como artefactos.
+# Al subir una etiqueta v* (p. ej. v1.2.0): además se publica un Release con
+# .exe (Windows), .dmg x64/arm64 (macOS), .deb, .rpm y .AppImage (Linux).
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  linux-mac:
+    name: Linux + macOS (.deb .rpm .AppImage .dmg)
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Herramientas del sistema
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y rpm hfsprogs cmake libssl-dev zlib1g-dev libbz2-dev xvfb poppler-utils qpdf
+      - run: npm ci
+      - name: Pruebas del exportador
+        run: npm run test:unit
+      - name: Pruebas de punta a punta
+        run: |
+          npm i --no-save playwright@1.49.1
+          npx playwright install-deps chromium >/dev/null
+          xvfb-run -a npm run test:e2e
+          xvfb-run -a node test/e2e-full.mjs
+      - name: Instaladores de Linux
+        run: npx electron-builder --linux AppImage deb rpm --x64 --publish never
+      - name: Herramientas para el .dmg (rcodesign + libdmg-hfsplus)
+        run: |
+          mkdir -p "$RUNNER_TEMP/tools" && cd "$RUNNER_TEMP/tools"
+          curl -sSL -o rcs.tgz "https://github.com/indygreg/apple-platform-rs/releases/download/apple-codesign%2F0.29.0/apple-codesign-0.29.0-x86_64-unknown-linux-musl.tar.gz"
+          tar xzf rcs.tgz
+          git clone -q --depth 1 https://github.com/mozilla/libdmg-hfsplus.git
+          cmake -S libdmg-hfsplus -B libdmg-hfsplus/build >/dev/null
+          make -C libdmg-hfsplus/build -j"$(nproc)" >/dev/null
+      - name: Instaladores de macOS (firma ad-hoc)
+        run: |
+          T="$RUNNER_TEMP/tools"
+          RCODESIGN="$(find "$T" -type f -name rcodesign | head -1)" \
+          HFSPLUS="$T/libdmg-hfsplus/build/hfs/hfsplus" \
+          DMG="$T/libdmg-hfsplus/build/dmg/dmg" \
+          bash scripts/build-mac-on-linux.sh
+      - uses: actions/upload-artifact@v4
+        with:
+          name: PapelPDF-linux-mac
+          path: |
+            dist/*.AppImage
+            dist/*.deb
+            dist/*.rpm
+            dist/*.dmg
+          if-no-files-found: error
+
+  windows:
+    name: Windows (.exe)
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Pruebas del exportador
+        run: node test/exporter.test.mjs
+        continue-on-error: true # usa pdftotext, que no viene en Windows
+      - name: Instalador de Windows
+        run: npx electron-builder --win nsis --x64 --publish never
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: false
+      - uses: actions/upload-artifact@v4
+        with:
+          name: PapelPDF-windows
+          path: dist/*.exe
+          if-no-files-found: error
+
+  release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [linux-mac, windows]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: artefactos
+          merge-multiple: true
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: artefactos/*
+          body: |
+            ## Descargas
+
+            | Sistema | Archivo |
+            | --- | --- |
+            | Windows 10/11 | `PapelPDF Setup …exe` |
+            | macOS Apple Silicon (M1–M4) | `PapelPDF-…-arm64.dmg` |
+            | macOS Intel | `PapelPDF-…-x64.dmg` |
+            | Ubuntu / Debian / Mint | `papelpdf_…_amd64.deb` |
+            | Fedora / RHEL / openSUSE | `papelpdf-….x86_64.rpm` |
+            | Cualquier Linux | `PapelPDF-….AppImage` |
+
+            **macOS:** la primera vez abre la app con clic derecho → Abrir. Si dice que "está dañada", ejecuta `xattr -cr /Applications/PapelPDF.app`.
+            **Windows:** si SmartScreen avisa, elige *Más información → Ejecutar de todas formas*.
+
+            Gratis y sin límites: sin marcas de agua, sin cuentas, sin anuncios y sin telemetría.
+          generate_release_notes: true

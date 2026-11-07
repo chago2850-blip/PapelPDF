@@ -1,0 +1,152 @@
+{
+  "name": "papelpdf",
+  "productName": "PapelPDF",
+  "version": "1.2.0",
+  "description": "Editor de PDF libre y multiplataforma: lee, anota, rellena, firma y organiza tus PDF.",
+  "main": "main.js",
+  "author": {
+    "name": "Santiago Miguel",
+    "email": "chago2850@gmail.com"
+  },
+  "license": "MIT",
+  "scripts": {
+    "start": "electron .",
+    "test": "node test/exporter.test.mjs && node test/e2e.mjs && node test/e2e-full.mjs",
+    "test:unit": "node test/exporter.test.mjs",
+    "test:e2e": "node test/e2e.mjs",
+    "dist": "electron-builder",
+    "dist:win": "electron-builder --win",
+    "dist:mac": "electron-builder --mac",
+    "dist:linux": "electron-builder --linux",
+    "postinstall": "node scripts/prepare-ocr.mjs",
+    "dist:mac-on-linux": "bash scripts/build-mac-on-linux.sh"
+  },
+  "dependencies": {
+    "@neslinesli93/qpdf-wasm": "0.3.1",
+    "docx": "9.5.1",
+    "pdf-lib": "1.17.1",
+    "pdfjs-dist": "4.10.38",
+    "tesseract.js": "7.0.0"
+  },
+  "devDependencies": {
+    "electron": "33.2.1",
+    "electron-builder": "25.1.8",
+    "@tesseract.js-data/spa": "1.0.0",
+    "@tesseract.js-data/eng": "1.0.0"
+  },
+  "build": {
+    "appId": "mx.santiagomiguel.papelpdf",
+    "productName": "PapelPDF",
+    "copyright": "© 2026 Santiago Miguel · MIT",
+    "directories": {
+      "output": "dist",
+      "buildResources": "build"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "src/**/*",
+      "build/icon.png",
+      "vendor/**/*",
+      "node_modules/**/*",
+      "!node_modules/pdfjs-dist/legacy/**",
+      "!node_modules/pdfjs-dist/web/**",
+      "!node_modules/pdfjs-dist/types/**",
+      "!node_modules/pdfjs-dist/image_decoders/**",
+      "!node_modules/@tesseract.js-data/**",
+      "!node_modules/tesseract.js/src/**",
+      "!node_modules/pdf-lib/es/**",
+      "!node_modules/pdf-lib/cjs/**",
+      "!node_modules/pdf-lib/src/**",
+      "!**/*.map",
+      "!**/*.d.ts",
+      "!**/*.md",
+      "!node_modules/tesseract.js/**",
+      "!node_modules/tesseract.js-core/**"
+    ],
+    "fileAssociations": [
+      {
+        "ext": "pdf",
+        "name": "Documento PDF",
+        "description": "Documento PDF",
+        "role": "Editor",
+        "mimeType": "application/pdf"
+      }
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64",
+            "arm64"
+          ]
+        },
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "build/icon.ico",
+      "signAndEditExecutable": true
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "shortcutName": "PapelPDF",
+      "language": "3082",
+      "installerIcon": "build/icon.ico",
+      "uninstallerIcon": "build/icon.ico",
+      "installerHeaderIcon": "build/icon.ico"
+    },
+    "mac": {
+      "target": [
+        {
+          "target": "dmg",
+          "arch": [
+            "x64",
+            "arm64"
+          ]
+        },
+        {
+          "target": "zip",
+          "arch": [
+            "x64",
+            "arm64"
+          ]
+        }
+      ],
+      "category": "public.app-category.productivity",
+      "icon": "build/icon.png"
+    },
+    "linux": {
+      "target": [
+        "AppImage",
+        "deb",
+        "rpm"
+      ],
+      "category": "Office",
+      "icon": "build/icons",
+      "maintainer": "Santiago Miguel <chago2850@gmail.com>",
+      "synopsis": "Editor de PDF libre",
+      "desktop": {
+        "StartupWMClass": "PapelPDF",
+        "Keywords": "pdf;editor;ocr;firma;anotar;"
+      }
+    },
+    "deb": {
+      "depends": [
+        "libnss3",
+        "libgtk-3-0",
+        "libxss1",
+        "libasound2 | libasound2t64"
+      ]
+    },
+    "publish": null
+  },
+  "homepage": "mailto:chago2850@gmail.com"
+}
