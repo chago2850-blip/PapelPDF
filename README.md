@@ -61,7 +61,7 @@ npm run dist:mac             # en una Mac: dmg + zip
 npm run dist:mac-on-linux    # en Linux: .dmg con firma ad-hoc (requiere rcodesign y libdmg-hfsplus)
 ```
 
-Al subir una etiqueta `v*` (por ejemplo `git tag v1.2.1 && git push --tags`), `.github/workflows/build.yml` ejecuta las pruebas, compila el `.exe` en Windows y el `.deb`, `.rpm`, `.AppImage` y `.dmg` en Linux, y los publica en un *Release*.
+Cada vez que se sube código a `main`, `.github/workflows/build.yml` ejecuta las pruebas, compila el `.exe` en Windows y el `.deb`, `.rpm`, `.AppImage` y `.dmg` en Linux, y los publica en el *Release* `v<versión>` según el campo `version` de `package.json`. Para sacar una versión nueva, sube ese número.
 
 ## Contribuir
 

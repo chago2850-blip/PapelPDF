@@ -1,8 +1,10 @@
 name: Compilar instaladores
 
-# En cada push a main y en cada PR: pruebas + instaladores como artefactos.
-# Al subir una etiqueta v* (p. ej. v1.2.0): además se publica un Release con
-# .exe (Windows), .dmg x64/arm64 (macOS), .deb, .rpm y .AppImage (Linux).
+# En cada PR: pruebas + instaladores como artefactos.
+# En cada push a main (o etiqueta v*): además se publica o actualiza el Release
+# v<versión de package.json> con .exe (Windows), .dmg x64/arm64 (macOS),
+# .deb, .rpm y .AppImage (Linux). Para sacar una versión nueva, sube el número
+# de "version" en package.json.
 
 on:
   push:
@@ -13,6 +15,10 @@ on:
 
 permissions:
   contents: write
+
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   linux-mac:
@@ -88,16 +94,24 @@ jobs:
           if-no-files-found: error
 
   release:
-    if: startsWith(github.ref, 'refs/tags/v')
+    if: github.event_name != 'pull_request' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v'))
     needs: [linux-mac, windows]
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
+      - id: v
+        run: echo "version=$(node -p "require('./package.json').version")" >> "$GITHUB_OUTPUT"
       - uses: actions/download-artifact@v4
         with:
           path: artefactos
           merge-multiple: true
       - uses: softprops/action-gh-release@v2
         with:
+          tag_name: v${{ steps.v.outputs.version }}
+          target_commitish: ${{ github.sha }}
+          name: PapelPDF ${{ steps.v.outputs.version }}
+          make_latest: true
+          overwrite_files: true
           files: artefactos/*
           body: |
             ## Descargas
